@@ -74,6 +74,10 @@ public final class ItemStackBuilder {
         return ItemStackReader.DEFAULT.read(config);
     }
 
+    public static ItemStackBuilder from(ItemStack itemStack) {
+        return new ItemStackBuilder(itemStack.clone()).hideAttributes();
+    }
+
     private ItemStackBuilder(ItemStack itemStack) {
         this.itemStack = Objects.requireNonNull(itemStack, "itemStack");
     }
