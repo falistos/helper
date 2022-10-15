@@ -151,4 +151,12 @@ public class PaginatedGui extends Gui {
         this.content = ImmutableList.copyOf(content);
     }
 
+    public int getPage() {
+        return this.page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
 }
