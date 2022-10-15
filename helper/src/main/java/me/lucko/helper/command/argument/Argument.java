@@ -56,6 +56,15 @@ public interface Argument {
     Optional<String> value();
 
     @Nonnull
+    default String valueOrRespond(Function<Integer, String> response) throws CommandInterruptException {
+        Optional<String> value = value();
+        if (!value.isPresent()) {
+            CommandInterruptException.makeAssertion(isPresent(), response.apply(index()).replace("{index}", String.valueOf(index())));
+        }
+        return value.get();
+    }
+
+    @Nonnull
     default <T> Optional<T> parse(@Nonnull ArgumentParser<T> parser) {
         return parser.parse(this);
     }
