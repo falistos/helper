@@ -116,6 +116,15 @@ public interface Argument {
         return parseOrFail(parser);
     }
 
+    @Nonnull
+    default <T> T parseOrRespond(@Nonnull Class<T> clazz, BiFunction<Integer, String, String> response) throws CommandInterruptException {
+        ArgumentParser<T> parser = Commands.parserRegistry().find(clazz).orElse(null);
+        if (parser == null) {
+            throw new RuntimeException("Unable to find ArgumentParser for " + clazz);
+        }
+        return parseOrRespond(parser, response);
+    }
+
     /**
      * Gets if the argument is present
      *

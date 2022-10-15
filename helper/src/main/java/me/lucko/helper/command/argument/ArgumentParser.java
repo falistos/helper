@@ -150,7 +150,7 @@ public interface ArgumentParser<T> {
         if (!value.isPresent()) {
             throw generateCustomException(argument.index(), null, response);
         }
-        return parseOrFail(value.get());
+        return parseOrRespond(argument.index(), value.get(), response);
     }
 
     /**
