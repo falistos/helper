@@ -25,16 +25,18 @@
 
 package me.lucko.helper.config.typeserializers;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonElement;
 
+import io.leangen.geantyref.TypeToken;
 import me.lucko.helper.gson.GsonProvider;
 
 import net.kyori.text.Component;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import java.lang.reflect.Type;
 
 public class Text3TypeSerializer implements TypeSerializer<Component> {
     public static final Text3TypeSerializer INSTANCE = new Text3TypeSerializer();
@@ -43,14 +45,14 @@ public class Text3TypeSerializer implements TypeSerializer<Component> {
     }
 
     @Override
-    public Component deserialize(TypeToken<?> typeToken, ConfigurationNode node) throws ObjectMappingException {
-        JsonElement json = node.getValue(TypeToken.of(JsonElement.class));
-        return GsonProvider.standard().fromJson(json, typeToken.getType());
+    public Component deserialize(Type type, ConfigurationNode node) throws SerializationException {
+        JsonElement json = node.get(TypeToken.get(JsonElement.class));
+        return GsonProvider.standard().fromJson(json, type);
     }
 
     @Override
-    public void serialize(TypeToken<?> typeToken, Component component, ConfigurationNode node) throws ObjectMappingException {
-        JsonElement element = GsonProvider.standard().toJsonTree(component, typeToken.getType());
-        node.setValue(TypeToken.of(JsonElement.class), element);
+    public void serialize(Type type, @Nullable Component component, ConfigurationNode node) throws SerializationException {
+        JsonElement element = GsonProvider.standard().toJsonTree(component, type);
+        node.set(TypeToken.get(JsonElement.class), element);
     }
 }

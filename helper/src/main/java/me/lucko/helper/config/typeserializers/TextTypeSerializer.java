@@ -25,20 +25,20 @@
 
 package me.lucko.helper.config.typeserializers;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 
+import io.leangen.geantyref.TypeToken;
 import me.lucko.helper.gson.GsonProvider;
 import me.lucko.helper.text.Component;
 import me.lucko.helper.text.serializer.ComponentSerializers;
 import me.lucko.helper.text.serializer.GsonComponentSerializer;
-
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
 import java.lang.reflect.Type;
 
@@ -52,15 +52,15 @@ public class TextTypeSerializer implements TypeSerializer<Component> {
     }
 
     @Override
-    public Component deserialize(TypeToken<?> typeToken, ConfigurationNode node) throws ObjectMappingException {
-        JsonElement json = node.getValue(TypeToken.of(JsonElement.class));
-        return DELEGATE.deserialize(json, typeToken.getType(), new GsonContext());
+    public Component deserialize(Type type, ConfigurationNode node) throws SerializationException {
+        JsonElement json = node.get(TypeToken.get(JsonElement.class));
+        return DELEGATE.deserialize(json, type, new GsonContext());
     }
 
     @Override
-    public void serialize(TypeToken<?> typeToken, Component component, ConfigurationNode node) throws ObjectMappingException {
-        JsonElement element = DELEGATE.serialize(component, typeToken.getType(), new GsonContext());
-        node.setValue(TypeToken.of(JsonElement.class), element);
+    public void serialize(Type type, @Nullable Component component, ConfigurationNode node) throws SerializationException {
+        JsonElement element = DELEGATE.serialize(component, type, new GsonContext());
+        node.set(TypeToken.get(JsonElement.class), element);
     }
 
     private static final class GsonContext implements JsonSerializationContext, JsonDeserializationContext {

@@ -25,35 +25,37 @@
 
 package me.lucko.helper.config.typeserializers;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonElement;
 
+import io.leangen.geantyref.TypeToken;
 import me.lucko.helper.datatree.ConfigurateDataTree;
 import me.lucko.helper.datatree.DataTree;
 import me.lucko.helper.datatree.GsonDataTree;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import java.lang.reflect.Type;
 
 public final class JsonTreeTypeSerializer implements TypeSerializer<DataTree> {
-    private static final TypeToken<JsonElement> JSON_ELEMENT_TYPE = TypeToken.of(JsonElement.class);
+    private static final TypeToken<JsonElement> JSON_ELEMENT_TYPE = TypeToken.get(JsonElement.class);
 
     public static final JsonTreeTypeSerializer INSTANCE = new JsonTreeTypeSerializer();
 
     @Override
-    public DataTree deserialize(TypeToken<?> typeToken, ConfigurationNode node) throws ObjectMappingException {
-        return DataTree.from(node.getValue(JSON_ELEMENT_TYPE));
+    public DataTree deserialize(Type type, ConfigurationNode node) throws SerializationException {
+        return DataTree.from(node.get(JSON_ELEMENT_TYPE));
     }
 
     @Override
-    public void serialize(TypeToken<?> typeToken, DataTree dataTree, ConfigurationNode node) throws ObjectMappingException {
+    public void serialize(Type type, @Nullable DataTree dataTree, ConfigurationNode node) throws SerializationException {
         if (dataTree instanceof GsonDataTree) {
-            node.setValue(JSON_ELEMENT_TYPE, ((GsonDataTree) dataTree).getElement());
+            node.set(JSON_ELEMENT_TYPE, ((GsonDataTree) dataTree).getElement());
         } else if (dataTree instanceof ConfigurateDataTree) {
-            node.setValue(((ConfigurateDataTree) dataTree).getNode());
+            node.set(((ConfigurateDataTree) dataTree).getNode());
         } else {
-            throw new ObjectMappingException("Unknown type: " + dataTree.getClass().getName());
+            throw new SerializationException("Unknown type: " + dataTree.getClass().getName());
         }
     }
 }

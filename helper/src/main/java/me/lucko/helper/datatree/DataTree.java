@@ -28,8 +28,7 @@ package me.lucko.helper.datatree;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.configurate.ConfigurationNode;
 
 import java.util.Map;
 import java.util.stream.Stream;

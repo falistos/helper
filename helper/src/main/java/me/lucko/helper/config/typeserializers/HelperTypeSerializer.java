@@ -25,18 +25,20 @@
 
 package me.lucko.helper.config.typeserializers;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 
+import io.leangen.geantyref.TypeToken;
 import me.lucko.helper.gson.GsonSerializable;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import java.lang.reflect.Type;
 
 public final class HelperTypeSerializer implements TypeSerializer<GsonSerializable> {
-    private static final TypeToken<JsonElement> JSON_ELEMENT_TYPE = TypeToken.of(JsonElement.class);
+    private static final TypeToken<JsonElement> JSON_ELEMENT_TYPE = TypeToken.get(JsonElement.class);
 
     public static final HelperTypeSerializer INSTANCE = new HelperTypeSerializer();
 
@@ -44,12 +46,12 @@ public final class HelperTypeSerializer implements TypeSerializer<GsonSerializab
     }
 
     @Override
-    public GsonSerializable deserialize(TypeToken<?> type, ConfigurationNode node) throws ObjectMappingException {
-        return GsonSerializable.deserializeRaw(type.getRawType(), node.getValue(JSON_ELEMENT_TYPE, JsonNull.INSTANCE));
+    public GsonSerializable deserialize(Type type, ConfigurationNode node) throws SerializationException {
+        return GsonSerializable.deserializeRaw(type.getClass(), node.get(JSON_ELEMENT_TYPE, JsonNull.INSTANCE));
     }
 
     @Override
-    public void serialize(TypeToken<?> type, GsonSerializable s, ConfigurationNode node) throws ObjectMappingException {
-        node.setValue(JSON_ELEMENT_TYPE, s.serialize());
+    public void serialize(Type type, @Nullable GsonSerializable s, ConfigurationNode node) throws SerializationException {
+        node.set(JSON_ELEMENT_TYPE, s.serialize());
     }
 }

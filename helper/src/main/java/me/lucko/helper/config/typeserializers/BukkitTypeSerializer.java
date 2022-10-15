@@ -25,15 +25,15 @@
 
 package me.lucko.helper.config.typeserializers;
 
-import com.google.common.reflect.TypeToken;
-
+import io.leangen.geantyref.TypeToken;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
-
+import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -46,21 +46,21 @@ public final class BukkitTypeSerializer implements TypeSerializer<ConfigurationS
     }
 
     @Override
-    public ConfigurationSerializable deserialize(TypeToken<?> type, ConfigurationNode from) throws ObjectMappingException {
-        Map<String, Object> map = from.getValue(TYPE);
+    public ConfigurationSerializable deserialize(Type type, ConfigurationNode from) throws SerializationException {
+        Map<String, Object> map = from.get(TYPE);
         deserializeChildren(map);
         return ConfigurationSerialization.deserializeObject(map);
     }
 
     @Override
-    public void serialize(TypeToken<?> type, ConfigurationSerializable from, ConfigurationNode to) {
+    public void serialize(Type type, @Nullable ConfigurationSerializable from, ConfigurationNode to) throws SerializationException {
         Map<String, Object> serialized = from.serialize();
 
         Map<String, Object> map = new LinkedHashMap<>(serialized.size() + 1);
         map.put(ConfigurationSerialization.SERIALIZED_TYPE_KEY, ConfigurationSerialization.getAlias(from.getClass()));
         map.putAll(serialized);
 
-        to.setValue(map);
+        to.set(map);
     }
 
     private static void deserializeChildren(Map<String, Object> map) {

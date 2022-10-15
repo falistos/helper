@@ -25,34 +25,26 @@
 
 package me.lucko.helper.config;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonElement;
 
-import me.lucko.helper.config.typeserializers.BukkitTypeSerializer;
-import me.lucko.helper.config.typeserializers.ColoredStringTypeSerializer;
-import me.lucko.helper.config.typeserializers.GsonTypeSerializer;
-import me.lucko.helper.config.typeserializers.HelperTypeSerializer;
-import me.lucko.helper.config.typeserializers.JsonTreeTypeSerializer;
-import me.lucko.helper.config.typeserializers.Text3TypeSerializer;
-import me.lucko.helper.config.typeserializers.TextTypeSerializer;
+import io.leangen.geantyref.TypeToken;
+import me.lucko.helper.config.typeserializers.*;
 import me.lucko.helper.datatree.DataTree;
 import me.lucko.helper.gson.GsonSerializable;
 
 import net.kyori.text.Component;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.yaml.snakeyaml.DumperOptions;
-
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.gson.GsonConfigurationLoader;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
-import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMapper;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializerCollection;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
-import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
+import org.spongepowered.configurate.CommentedConfigurationNode;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.gson.GsonConfigurationLoader;
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
+import org.spongepowered.configurate.loader.ConfigurationLoader;
+import org.spongepowered.configurate.objectmapping.ObjectMapper;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializerCollection;
+import org.spongepowered.configurate.yaml.NodeStyle;
+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,19 +57,19 @@ import javax.annotation.Nonnull;
 /**
  * Misc utilities for working with Configurate
  */
-public abstract class ConfigFactory<N extends ConfigurationNode, L extends ConfigurationLoader<N>> {
+public abstract class ConfigFactory<N extends ConfigurationNode, L extends ConfigurationLoader<?>> {
 
-    private static final ConfigFactory<ConfigurationNode, YAMLConfigurationLoader> YAML = new ConfigFactory<ConfigurationNode, YAMLConfigurationLoader>() {
+    private static final ConfigFactory<ConfigurationNode, YamlConfigurationLoader> YAML = new ConfigFactory<ConfigurationNode, YamlConfigurationLoader>() {
         @Nonnull
         @Override
-        public YAMLConfigurationLoader loader(@Nonnull Path path) {
-            YAMLConfigurationLoader.Builder builder = YAMLConfigurationLoader.builder()
-                    .setFlowStyle(DumperOptions.FlowStyle.BLOCK)
-                    .setIndent(2)
-                    .setSource(() -> Files.newBufferedReader(path, StandardCharsets.UTF_8))
-                    .setSink(() -> Files.newBufferedWriter(path, StandardCharsets.UTF_8));
+        public YamlConfigurationLoader loader(@Nonnull Path path) {
+            YamlConfigurationLoader.Builder builder = YamlConfigurationLoader.builder()
+                    .nodeStyle(NodeStyle.BLOCK)
+                    .indent(2)
+                    .source(() -> Files.newBufferedReader(path, StandardCharsets.UTF_8))
+                    .sink(() -> Files.newBufferedWriter(path, StandardCharsets.UTF_8));
 
-            builder.setDefaultOptions(builder.getDefaultOptions().withSerializers(TYPE_SERIALIZERS));
+            builder.defaultOptions(builder.defaultOptions().serializers(TYPE_SERIALIZERS));
             return builder.build();
         }
     };
@@ -87,11 +79,11 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
         @Override
         public GsonConfigurationLoader loader(@Nonnull Path path) {
             GsonConfigurationLoader.Builder builder = GsonConfigurationLoader.builder()
-                    .setIndent(2)
-                    .setSource(() -> Files.newBufferedReader(path, StandardCharsets.UTF_8))
-                    .setSink(() -> Files.newBufferedWriter(path, StandardCharsets.UTF_8));
+                    .indent(2)
+                    .source(() -> Files.newBufferedReader(path, StandardCharsets.UTF_8))
+                    .sink(() -> Files.newBufferedWriter(path, StandardCharsets.UTF_8));
 
-            builder.setDefaultOptions(builder.getDefaultOptions().withSerializers(TYPE_SERIALIZERS));
+            builder.defaultOptions(builder.defaultOptions().serializers(TYPE_SERIALIZERS));
             return builder.build();
         }
     };
@@ -101,26 +93,26 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
         @Override
         public HoconConfigurationLoader loader(@Nonnull Path path) {
             HoconConfigurationLoader.Builder builder = HoconConfigurationLoader.builder()
-                    .setSource(() -> Files.newBufferedReader(path, StandardCharsets.UTF_8))
-                    .setSink(() -> Files.newBufferedWriter(path, StandardCharsets.UTF_8));
+                    .source(() -> Files.newBufferedReader(path, StandardCharsets.UTF_8))
+                    .sink(() -> Files.newBufferedWriter(path, StandardCharsets.UTF_8));
 
-            builder.setDefaultOptions(builder.getDefaultOptions().withSerializers(TYPE_SERIALIZERS));
+            builder.defaultOptions(builder.defaultOptions().serializers(TYPE_SERIALIZERS));
             return builder.build();
         }
     };
 
     private static final TypeSerializerCollection TYPE_SERIALIZERS;
     static {
-        TypeSerializerCollection helperSerializers = TypeSerializerCollection.create();
-        helperSerializers.register(TypeToken.of(JsonElement.class), GsonTypeSerializer.INSTANCE);
-        helperSerializers.register(TypeToken.of(GsonSerializable.class), HelperTypeSerializer.INSTANCE);
-        helperSerializers.register(TypeToken.of(ConfigurationSerializable.class), BukkitTypeSerializer.INSTANCE);
-        helperSerializers.register(TypeToken.of(DataTree.class), JsonTreeTypeSerializer.INSTANCE);
-        helperSerializers.register(TypeToken.of(String.class), ColoredStringTypeSerializer.INSTANCE);
-        helperSerializers.register(TypeToken.of(me.lucko.helper.text.Component.class), TextTypeSerializer.INSTANCE);
-        helperSerializers.register(TypeToken.of(Component.class), Text3TypeSerializer.INSTANCE);
+        TypeSerializerCollection.Builder helperSerializers = TypeSerializerCollection.builder();
+        helperSerializers.register(TypeToken.get(JsonElement.class), GsonTypeSerializer.INSTANCE);
+        helperSerializers.register(TypeToken.get(GsonSerializable.class), HelperTypeSerializer.INSTANCE);
+        helperSerializers.register(TypeToken.get(ConfigurationSerializable.class), BukkitTypeSerializer.INSTANCE);
+        helperSerializers.register(TypeToken.get(DataTree.class), JsonTreeTypeSerializer.INSTANCE);
+        helperSerializers.register(TypeToken.get(String.class), ColoredStringTypeSerializer.INSTANCE);
+        helperSerializers.register(TypeToken.get(me.lucko.helper.text.Component.class), TextTypeSerializer.INSTANCE);
+        helperSerializers.register(TypeToken.get(Component.class), Text3TypeSerializer.INSTANCE);
 
-        TYPE_SERIALIZERS = helperSerializers.newChild();
+        TYPE_SERIALIZERS = helperSerializers.build();
     }
 
     @Nonnull
@@ -129,7 +121,7 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
     }
 
     @Nonnull
-    public static ConfigFactory<ConfigurationNode, YAMLConfigurationLoader> yaml() {
+    public static ConfigFactory<ConfigurationNode, YamlConfigurationLoader> yaml() {
         return YAML;
     }
 
@@ -151,7 +143,7 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
     public abstract L loader(@Nonnull Path path);
 
     @Nonnull
-    public N load(@Nonnull Path path) {
+    public ConfigurationNode load(@Nonnull Path path) {
         try {
             return loader(path).load();
         } catch (IOException e) {
@@ -170,22 +162,22 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
     public <T> void load(@Nonnull Path path, T object) {
         try {
             L loader = loader(path);
-            ObjectMapper<T>.BoundInstance mapper = objectMapper(object);
+            ObjectMapper<T> objectMapper = objectMapper(object);
 
             if (!Files.exists(path)) {
                 // create a new empty node
-                N node = loader.createEmptyNode();
+                ConfigurationNode node = loader.createNode();
                 // write the content of the object to the node
-                mapper.serialize(node);
+                objectMapper.save(object, node);
                 // save the node
                 loader.save(node);
             } else {
                 // load the node from the file
-                N node = loader.load();
+                ConfigurationNode node = loader.load();
                 // populate the config object
-                mapper.populate(node);
+                objectMapper.load(node);
             }
-        } catch (ObjectMappingException | IOException e) {
+        } catch (IOException e) {
             throw new ConfigurationException(e);
         }
     }
@@ -196,7 +188,7 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
     }
 
     @Nonnull
-    public N load(@Nonnull File file) {
+    public ConfigurationNode load(@Nonnull File file) {
         return load(file.toPath());
     }
 
@@ -211,17 +203,17 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
     @Nonnull
     public static <T> ObjectMapper<T> classMapper(@Nonnull Class<T> clazz) {
         try {
-            return ObjectMapper.forClass(clazz);
-        } catch (ObjectMappingException e) {
+            return ObjectMapper.factory().get(clazz);
+        } catch (SerializationException e) {
             throw new ConfigurationException(e);
         }
     }
 
     @Nonnull
-    public static <T> ObjectMapper<T>.BoundInstance objectMapper(@Nonnull T object) {
+    public static <T> ObjectMapper<T> objectMapper(@Nonnull T object) {
         try {
-            return ObjectMapper.forObject(object);
-        } catch (ObjectMappingException e) {
+            return (ObjectMapper<T>) ObjectMapper.factory().get(object.getClass());
+        } catch (SerializationException e) {
             throw new ConfigurationException(e);
         }
     }
@@ -229,8 +221,8 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
     @Nonnull
     public static <T> T generate(@Nonnull Class<T> clazz, @Nonnull ConfigurationNode node) {
         try {
-            return classMapper(clazz).bindToNew().populate(node);
-        } catch (ObjectMappingException e) {
+            return classMapper(clazz).load(node);
+        } catch (SerializationException e) {
             throw new ConfigurationException(e);
         }
     }
@@ -238,8 +230,8 @@ public abstract class ConfigFactory<N extends ConfigurationNode, L extends Confi
     @Nonnull
     public static <T> T populate(@Nonnull T object, @Nonnull ConfigurationNode node) {
         try {
-            return objectMapper(object).populate(node);
-        } catch (ObjectMappingException e) {
+            return objectMapper(object).load(node);
+        } catch (SerializationException e) {
             throw new ConfigurationException(e);
         }
     }

@@ -28,9 +28,12 @@ package me.lucko.helper.config.typeserializers;
 import com.google.common.reflect.TypeToken;
 
 import me.lucko.helper.text.Text;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.serialize.TypeSerializer;
 
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
+import java.lang.reflect.Type;
 
 public class ColoredStringTypeSerializer implements TypeSerializer<String> {
 
@@ -40,12 +43,12 @@ public class ColoredStringTypeSerializer implements TypeSerializer<String> {
     }
 
     @Override
-    public String deserialize(TypeToken<?> type, ConfigurationNode node) {
+    public String deserialize(Type type, ConfigurationNode node) throws SerializationException {
         return Text.colorize(node.getString());
     }
 
     @Override
-    public void serialize(TypeToken<?> type, String s, ConfigurationNode node) {
-        node.setValue(Text.decolorize(s));
+    public void serialize(Type type, @Nullable String s, ConfigurationNode node) throws SerializationException {
+        node.set(Text.decolorize(s));
     }
 }

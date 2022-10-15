@@ -27,9 +27,7 @@ package me.lucko.helper.datatree;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.Types;
+import org.spongepowered.configurate.ConfigurationNode;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -55,30 +53,31 @@ public class ConfigurateDataTree implements DataTree {
     @Nonnull
     @Override
     public ConfigurateDataTree resolve(@Nonnull Object... path) {
-        return new ConfigurateDataTree(this.node.getNode(path));
+        throw new UnsupportedOperationException();
+        // return new ConfigurateDataTree(this.node.getNode(path));
     }
 
     @Nonnull
     @Override
     public Stream<Map.Entry<String, ConfigurateDataTree>> asObject() {
-        Preconditions.checkState(this.node.hasMapChildren(), "node does not have map children");
-        return this.node.getChildrenMap().entrySet().stream()
+        Preconditions.checkState(this.node.childrenMap() != null, "node does not have map children");
+        return this.node.childrenMap().entrySet().stream()
                 .map(entry -> Maps.immutableEntry(entry.getKey().toString(), new ConfigurateDataTree(entry.getValue())));
     }
 
     @Nonnull
     @Override
     public Stream<ConfigurateDataTree> asArray() {
-        Preconditions.checkState(this.node.hasListChildren(), "node does not have list children");
-        return this.node.getChildrenList().stream().map(ConfigurateDataTree::new);
+        Preconditions.checkState(this.node.childrenMap() != null, "node does not have list children");
+        return this.node.childrenList().stream().map(ConfigurateDataTree::new);
     }
 
     @Nonnull
     @Override
     public Stream<Map.Entry<Integer, ConfigurateDataTree>> asIndexedArray() {
-        Preconditions.checkState(this.node.hasListChildren(), "node does not have list children");
+        Preconditions.checkState(this.node.childrenList() != null, "node does not have list children");
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<Map.Entry<Integer, ConfigurateDataTree>>() {
-            private final Iterator<? extends ConfigurationNode> iterator = ConfigurateDataTree.this.node.getChildrenList().iterator();
+            private final Iterator<? extends ConfigurationNode> iterator = ConfigurateDataTree.this.node.childrenList().iterator();
             private int index = 0;
 
             @Override
@@ -96,27 +95,27 @@ public class ConfigurateDataTree implements DataTree {
     @Nonnull
     @Override
     public String asString() {
-        return this.node.getValue(Types::asString);
+        return this.node.getString(null);
     }
 
     @Nonnull
     @Override
     public Number asNumber() {
-        return this.node.getValue(Types::asDouble);
+        return this.node.getDouble();
     }
 
     @Override
     public int asInt() {
-        return this.node.getValue(Types::asInt);
+        return this.node.getInt();
     }
 
     @Override
     public double asDouble() {
-        return this.node.getValue(Types::asDouble);
+        return this.node.getDouble();
     }
 
     @Override
     public boolean asBoolean() {
-        return this.node.getValue(Types::asBoolean);
+        return this.node.getBoolean();
     }
 }
