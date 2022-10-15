@@ -33,6 +33,7 @@ import me.lucko.helper.metadata.MetadataKey;
 import me.lucko.helper.metadata.MetadataMap;
 import me.lucko.helper.reflect.MinecraftVersion;
 import me.lucko.helper.reflect.MinecraftVersions;
+import me.lucko.helper.terminable.Terminable;
 import me.lucko.helper.terminable.TerminableConsumer;
 import me.lucko.helper.terminable.composite.CompositeTerminable;
 import me.lucko.helper.text.Text;
@@ -63,7 +64,7 @@ import javax.annotation.Nullable;
  * A simple GUI abstraction
  */
 @NonnullByDefault
-public abstract class Gui implements TerminableConsumer {
+public abstract class Gui implements TerminableConsumer, Terminable {
     public static final MetadataKey<Gui> OPEN_GUI_KEY = MetadataKey.create("open-gui", Gui.class);
 
     /**
