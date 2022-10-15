@@ -75,6 +75,14 @@ public class PaginatedGui extends Gui {
         this.previousPageItem = model.getPreviousPageItem();
     }
 
+    public static PaginatedGui create(Function<PaginatedGui, List<Item>> content, Player player, PaginatedGuiBuilder model) {
+        return new PaginatedGui(content, player, model);
+    }
+
+    public static PaginatedGui create(Player player, PaginatedGuiBuilder model) {
+        return new PaginatedGui(p -> new ArrayList<>(), player, model);
+    }
+
     @Override
     public void redraw() {
         this.scheme.apply(this);
