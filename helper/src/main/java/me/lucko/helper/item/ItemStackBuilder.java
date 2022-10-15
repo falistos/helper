@@ -63,11 +63,11 @@ public final class ItemStackBuilder {
     private final ItemStack itemStack;
 
     public static ItemStackBuilder of(Material material) {
-        return new ItemStackBuilder(new ItemStack(material)).hideAttributes();
+        return new ItemStackBuilder(new ItemStack(material));
     }
 
     public static ItemStackBuilder of(ItemStack itemStack) {
-        return new ItemStackBuilder(itemStack).hideAttributes();
+        return new ItemStackBuilder(itemStack);
     }
 
     public static ItemStackBuilder of(ConfigurationSection config) {
@@ -75,7 +75,7 @@ public final class ItemStackBuilder {
     }
 
     public static ItemStackBuilder from(ItemStack itemStack) {
-        return new ItemStackBuilder(itemStack.clone()).hideAttributes();
+        return new ItemStackBuilder(itemStack.clone());
     }
 
     private ItemStackBuilder(ItemStack itemStack) {
