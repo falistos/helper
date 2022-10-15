@@ -31,6 +31,9 @@ import me.lucko.helper.command.CommandInterruptException;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Represents a command argument
@@ -63,6 +66,11 @@ public interface Argument {
     }
 
     @Nonnull
+    default <T> T parseOrRespond(@Nonnull ArgumentParser<T> parser, BiFunction<Integer, String, String> response) throws CommandInterruptException {
+        return parser.parseOrRespond(this, response);
+    }
+
+    @Nonnull
     default <T> Optional<T> parse(@Nonnull TypeToken<T> type) {
         return Commands.parserRegistry().find(type).flatMap(this::parse);
     }
@@ -74,6 +82,15 @@ public interface Argument {
             throw new RuntimeException("Unable to find ArgumentParser for " + type);
         }
         return parseOrFail(parser);
+    }
+
+    @Nonnull
+    default <T> T parseOrRespond(@Nonnull TypeToken<T> type, BiFunction<Integer, String, String> response) throws CommandInterruptException {
+        ArgumentParser<T> parser = Commands.parserRegistry().find(type).orElse(null);
+        if (parser == null) {
+            throw new RuntimeException("Unable to find ArgumentParser for " + type);
+        }
+        return parseOrRespond(parser, response);
     }
 
     @Nonnull

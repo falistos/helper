@@ -29,7 +29,9 @@ import me.lucko.helper.command.CommandInterruptException;
 import me.lucko.helper.utils.annotation.NonnullByDefault;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -86,6 +88,10 @@ public interface ArgumentParser<T> {
         return new CommandInterruptException("&cArgument at index " + missingArgumentIndex + " is missing.");
     }
 
+    default CommandInterruptException generateCustomException(int index, @Nullable String value, BiFunction<Integer, String, String> response) {
+        return new CommandInterruptException(response.apply(index, value));
+    }
+
     /**
      * Parses the value from a string, throwing an interrupt exception if
      * parsing failed.
@@ -98,6 +104,15 @@ public interface ArgumentParser<T> {
         Optional<T> ret = parse(s);
         if (!ret.isPresent()) {
             throw generateException(s);
+        }
+        return ret.get();
+    }
+
+    @Nonnull
+    default T parseOrRespond(int index, @Nonnull String s, BiFunction<Integer, String, String> response) throws CommandInterruptException {
+        Optional<T> ret = parse(s);
+        if (!ret.isPresent()) {
+            throw generateCustomException(index, s, response);
         }
         return ret.get();
     }
@@ -125,6 +140,15 @@ public interface ArgumentParser<T> {
         Optional<String> value = argument.value();
         if (!value.isPresent()) {
             throw generateException(argument.index());
+        }
+        return parseOrFail(value.get());
+    }
+
+    @Nonnull
+    default T parseOrRespond(@Nonnull Argument argument, BiFunction<Integer, String, String> response) throws CommandInterruptException {
+        Optional<String> value = argument.value();
+        if (!value.isPresent()) {
+            throw generateCustomException(argument.index(), null, response);
         }
         return parseOrFail(value.get());
     }
