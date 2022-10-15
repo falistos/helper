@@ -160,6 +160,10 @@ public final class ItemStackBuilder {
         return transform(itemStack -> itemStack.getEnchantments().keySet().forEach(itemStack::removeEnchantment));
     }
 
+    public ItemStackBuilder glow() {
+        return enchant(Enchantment.LUCK).flag(ItemFlag.HIDE_ENCHANTS);
+    }
+
     public ItemStackBuilder flag(ItemFlag... flags) {
         return transformMeta(meta -> meta.addItemFlags(flags));
     }
