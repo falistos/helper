@@ -59,13 +59,10 @@
     </properties>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>luck-snapshots</id>
-            <url>https://nexus.lucko.me/repository/maven-snapshots/</url>
-        </snapshotRepository>
         <repository>
-            <id>luck-releases</id>
-            <url>https://nexus.lucko.me/repository/maven-releases/</url>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/falistos/helper</url>
         </repository>
     </distributionManagement>
 
